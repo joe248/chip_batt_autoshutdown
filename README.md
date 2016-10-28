@@ -29,6 +29,6 @@ Start it:
   ```
   
 #Thanks to
-xtacocorex: https://github.com/xtacocorex/chip_batt_autoshutdown/
-noimjosh https://github.com/noimjosh/chip_autoshutdown/
+xtacocorex: https://github.com/xtacocorex/chip_batt_autoshutdown/<br>
+noimjosh https://github.com/noimjosh/chip_autoshutdown/<br>
 CapnBry: https://bbs.nextthing.co/t/updated-battery-sh-dumps-limits-input-statuses/2921
