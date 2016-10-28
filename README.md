@@ -1,52 +1,34 @@
-CHIP Battery Auto-Shutdown
+CHIP Auto-Shutdown
 ============================
 
-This script will check the level of a battery attached to the CHIP.
-
-This needs to be run as root due to the shutdown command.
-
-This script does not have a loop internal to it and should be set to a cron job (preferably root cron) at a 5 or 10 minute interval.
+This script will check if power is supplied through the micro USB attached to the CHIP.
 
 # Installation
-
+If you already have git installed, skip this one (obviously).
   ```
-  git clone https://github.com/xtacocorex/chip_batt_autoshutdown.git
-  cd chip_batt_autoshutdown
-  chmod +x chip_batt_autoshutdown.sh
+  sudo apt-get install git
+  ```
+Clone this repository (or you could just download the files):
+  ```
+  git clone https://github.com/noimjosh/chip_autoshutdown.git
+  ```
+Install the script:
+  ```
+  cd chip_autoshutdown
   sudo cp ./chip_autoshutdown.sh /usr/bin/
   ```
-
-If running the script manually, be sure to run with sudo
-
-# Cron Job Setup
-
-Edit the root crontab
-
+Install systemd service (so it runs at boot):
   ```
-  sudo crontab -e
+  sudo cp ./chip_autoshutdown.service /lib/systemd/system/
+  sudo systemctl daemon-reload
+  sudo systemctl enable chip_autoshutdown.service
   ```
-
-For 5 Minute check, enter:
-
+Start it:
   ```
-  */5 * * * * /usr/bin/chip_autoshutdown.sh >> /var/log/chip_batt.log 2>&1
+  sudo systemctl start chip_autoshutdown.service
   ```
-
-For 10 Minute check, enter:
-
-  ```
-  */10 * * * * /usr/bin/chip_autoshutdown.sh >> /var/log/chip_batt.log 2>&1
-  ```
-
-Then do:
-
-  ```
-  sudo service cron restart
-  ```
-
-To check the status of the script:
-
-  ```
-  tail -f /var/log/chip_batt.log
-  ```
-
+  
+#Thanks to
+xtacocorex: https://github.com/xtacocorex/chip_batt_autoshutdown/
+noimjosh https://github.com/noimjosh/chip_autoshutdown/
+CapnBry: https://bbs.nextthing.co/t/updated-battery-sh-dumps-limits-input-statuses/2921
