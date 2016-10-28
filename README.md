@@ -10,7 +10,7 @@ If you already have git installed, skip this one (obviously).
   ```
 Clone this repository (or you could just download the files):
   ```
-  git clone https://github.com/noimjosh/chip_autoshutdown.git
+  git clone https://github.com/stadar/chip_batt_autoshutdown.git
   ```
 Install the script:
   ```
