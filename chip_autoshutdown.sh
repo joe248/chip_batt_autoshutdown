@@ -1,31 +1,33 @@
 #!/bin/bash
 
-# 2016 ROBERT WOLTERMAN (xtacocorex)
-# WITH HELP FROM CHIP-hwtest/battery.sh
-
+# Forked https://github.com/xtacocorex/chip_batt_autoshutdown
+# Modified to shutdown on microUSB unplug with code from
+# https://bbs.nextthing.co/t/updated-battery-sh-dumps-limits-input-statuses/2921
+# Service code from noimjosh https://github.com/noimjosh/chip_autoshutdown/
 # MIT LICENSE, SEE LICENSE FILE
 
 # LOGGING HAT-TIP TO http://urbanautomaton.com/blog/2014/09/09/redirecting-bash-script-output-to-syslog/
-
-# THIS NEEDS TO BE RUN AS ROOT
-# PROBABLY SET AS A CRON JOB EVERY 5 OR 10 MINUTES
 
 # SIMPLE SCRIPT TO POWER DOWN THE CHIP BASED UPON BATTERY VOLTAGE
 
 # CHANGE THESE TO CUSTOMIZE THE SCRIPT
 # ****************************
 # ** THESE MUST BE INTEGERS **
-MINVOLTAGELEVEL=2200
+MINVOLTAGELEVEL=3400
 MINCHARGECURRENT=10
-POLLING_WAIT=10
+POLLING_WAIT=1
 
 # ****************************
 
 readonly SCRIPT_NAME=$(basename $0)
+LAST_MESSAGE=""
 
 log() {
     # echo "`date -u`" "$@"
-    #logger -p user.notice -t $SCRIPT_NAME "$@"
+    if [ "$@" != "$LAST_MESSAGE" ]; then
+        LAST_MESSAGE="$@"
+        logger -p user.notice -t "battery" "$@"
+    fi
 }
 
 # TALK TO THE POWER MANAGEMENT
@@ -42,7 +44,7 @@ do
     BAT_EXIST=$(($(($POWER_OP_MODE&0x20))/32))
     if [ $BAT_EXIST == 1 ]; then
         
-        log "CHIP HAS A BATTERY ATTACHED"
+        # log "CHIP HAS A BATTERY ATTACHED"
         BAT_VOLT_MSB=$(/usr/sbin/i2cget -y -f 0 0x34 0x78)
         BAT_VOLT_LSB=$(/usr/sbin/i2cget -y -f 0 0x34 0x79)
         BAT_BIN=$(( $(($BAT_VOLT_MSB << 4)) | $(($(($BAT_VOLT_LSB & 0x0F)) )) ))
@@ -52,8 +54,8 @@ do
             
         # CHECK BATTERY LEVEL AGAINST MINVOLTAGELEVEL
         if [ $BAT_VOLT -le $MINVOLTAGELEVEL ]; then
-            log "CHIP BATTERY VOLTAGE IS LESS THAN $MINVOLTAGELEVEL"
-            log "CHECKING FOR CHIP BATTERY CHARGING"
+            # log "CHIP BATTERY VOLTAGE IS LESS THAN $MINVOLTAGELEVEL"
+            # log "CHECKING FOR CHIP BATTERY CHARGING"
             # GET THE CHARGE CURRENT
             BAT_ICHG_MSB=$(/usr/sbin/i2cget -y -f 0 0x34 0x7A)
             BAT_ICHG_LSB=$(/usr/sbin/i2cget -y -f 0 0x34 0x7B)
@@ -70,8 +72,28 @@ do
                 log "CHIP BATTERY IS CHARGING"
             fi
         else
-            log "CHIP BATTERY LEVEL IS GOOD"
+            #read Power OPERATING MODE register @01h
+            POWER_OP_MODE=$(i2cget -y -f 0 0x34 0x01)
+            #echo $POWER_OP_MODE
+
+            CHARG_IND=$(($(($POWER_OP_MODE&0x40))/64))  # divide by 64 is like shifting rigth 6 times
+            if [ $CHARG_IND -eq 1 ]; then
+                log "BATTERY IS CHARGING"
+            else
+                BAT_IDISCHG_MSB=$(i2cget -y -f 0 0x34 0x7C)
+                BAT_IDISCHG_LSB=$(i2cget -y -f 0 0x34 0x7D)
+                BAT_IDISCHG_BIN=$(( $(($BAT_IDISCHG_MSB << 5)) | $(($(($BAT_IDISCHG_LSB & 0x1F)) )) ))
+                BAT_IDISCHG=$(echo "($BAT_IDISCHG_BIN)"|bc)
+                if [ $BAT_IDISCHG -le $MINCHARGECURRENT ]; then
+                    log "BATTERY IS CHARGED"
+                else
+                    log "BATTERY DISCHARGING"
+                fi 
+            fi
+            # log "CHIP BATTERY LEVEL IS GOOD"
         fi
+    else
+        log "BATTERY NOT PRESENT."
     fi
     sleep $POLLING_WAIT
 done

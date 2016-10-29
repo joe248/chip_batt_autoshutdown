@@ -1,7 +1,9 @@
 CHIP Auto-Shutdown
 ============================
 
-This script will check if power is supplied through the micro USB attached to the CHIP.
+This script will monitor battery voltage and when it drops below a specified threshold it will shutdown CHIP.
+It can be installed as a service so frequent battery polling is possible.
+Charging state changes are logged to syslog.
 
 # Installation
 If you already have git installed, skip this one (obviously).
