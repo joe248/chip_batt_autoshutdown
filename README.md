@@ -12,7 +12,7 @@ If you already have git installed, skip this one (obviously).
   ```
 Clone this repository (or you could just download the files):
   ```
-  git clone https://github.com/noimjosh/chip_autoshutdown.git
+  git clone https://github.com/stadar/chip_batt_autoshutdown.git
   ```
 Install the script:
   ```
@@ -31,6 +31,6 @@ Start it:
   ```
   
 #Thanks to
-xtacocorex: https://github.com/xtacocorex/chip_batt_autoshutdown/
-noimjosh https://github.com/noimjosh/chip_autoshutdown/
+xtacocorex: https://github.com/xtacocorex/chip_batt_autoshutdown/<br>
+noimjosh https://github.com/noimjosh/chip_autoshutdown/<br>
 CapnBry: https://bbs.nextthing.co/t/updated-battery-sh-dumps-limits-input-statuses/2921
