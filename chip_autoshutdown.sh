@@ -87,7 +87,7 @@ do
 
             CHARG_IND=$(($(($POWER_OP_MODE&0x40))/64))  # divide by 64 is like shifting rigth 6 times
             if [ $CHARG_IND -eq 1 ]; then
-                log "BATTERY IS CHARGING"
+                log "BATTERY IS CHARGING ($BAT_GAUGE_DEC%)"
             else
                 BAT_IDISCHG_MSB=$(i2cget -y -f 0 0x34 0x7C)
                 BAT_IDISCHG_LSB=$(i2cget -y -f 0 0x34 0x7D)
@@ -96,7 +96,7 @@ do
                 if [ $BAT_IDISCHG -le $MINCHARGECURRENT ]; then
                     log "BATTERY IS CHARGED"
                 else
-                    log "BATTERY DISCHARGING"
+                    log "BATTERY DISCHARGING ($BAT_GAUGE_DEC%)"
                 fi 
             fi
             # log "CHIP BATTERY LEVEL IS GOOD"
