@@ -10,12 +10,14 @@
 
 # SIMPLE SCRIPT TO POWER DOWN THE CHIP BASED UPON BATTERY VOLTAGE
 
+# THIS SCRIPT NEEDS TO BE RUN AS ROOT TO WORK
+
 # CHANGE THESE TO CUSTOMIZE THE SCRIPT
 # ****************************
 # ** THESE MUST BE INTEGERS **
-MINVOLTAGELEVEL=3400
+MINBATTERYPERCENTAGE=25
 MINCHARGECURRENT=10
-POLLING_WAIT=1
+POLLING_WAIT=30
 
 # ****************************
 
@@ -51,10 +53,17 @@ do
         BAT_VOLT_FLOAT=$(echo "($BAT_BIN*1.1)"|bc)
         # CONVERT TO AN INTEGER
         BAT_VOLT=${BAT_VOLT_FLOAT%.*}
-            
-        # CHECK BATTERY LEVEL AGAINST MINVOLTAGELEVEL
-        if [ $BAT_VOLT -le $MINVOLTAGELEVEL ]; then
-            # log "CHIP BATTERY VOLTAGE IS LESS THAN $MINVOLTAGELEVEL"
+    
+	#read fuel gauge B9h
+	BAT_GAUGE_HEX=$(i2cget -y -f 0 0x34 0xb9)
+	# bash math -- converts hex to decimal so `bc` won't complain later...
+	# MSB is 8 bits, LSB is lower 4 bits
+	BAT_GAUGE_DEC=$(($BAT_GAUGE_HEX))
+	# log "BATTERY PERCENTAGE IS $BAT_GAUGE_DEC %"
+
+        # CHECK BATTERY PERCENTAGE AGAINST MINBATTERYPERCENTAGE
+        if [ $BAT_GAUGE_DEC -le $MINBATTERYPERCENTAGE ]; then
+            log "CHIP BATTERY PERCENTAGE $BAT_GAUGE_DEC% IS LESS THAN $MINBATTERYPERCENTAGE%"
             # log "CHECKING FOR CHIP BATTERY CHARGING"
             # GET THE CHARGE CURRENT
             BAT_ICHG_MSB=$(/usr/sbin/i2cget -y -f 0 0x34 0x7A)
